@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Penilai Infografis AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        .hidden-section { display: none !important; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-200 text-slate-800 font-sans sm:p-4 flex justify-center">
+
+    <div class="w-full max-w-md bg-slate-50 sm:rounded-[2.5rem] sm:shadow-2xl overflow-x-hidden relative pb-8 min-h-screen sm:min-h-0 sm:border-[8px] border-slate-800 flex flex-col">
+        
+        <header class="sticky top-0 z-50 bg-blue-600 text-white p-5 shadow-lg rounded-b-3xl mb-5 text-center">
+            <h1 class="text-xl font-extrabold mb-1 flex items-center justify-center gap-2">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                Penilai Infografis AI
+            </h1>
+            <p class="text-blue-100 text-xs">Otomatisasi penilaian untuk Kelas 6 SD</p>
+        </header>
+
+        <main class="px-5 flex-1 flex flex-col">
+            <div id="section-input" class="flex flex-col flex-1">
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-5">
+                    <h2 class="text-base font-bold mb-3 flex items-center gap-2">
+                        <i data-lucide="user" class="w-[18px] h-[18px] text-blue-500"></i> Data Siswa
+                    </h2>
+                    <div class="flex flex-col gap-3 mb-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Siswa</label>
+                            <input type="text" id="input-name" placeholder="Masukkan nama..." class="w-full p-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Nomor Peserta</label>
+                            <input type="text" id="input-number" placeholder="Contoh: 01-001-001-8" class="w-full p-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input file untuk Galeri -->
+                <input type="file" id="fileInput" accept="image/*" class="hidden" />
+
+                <!-- Tampilan Awal: Pilihan Kamera atau Galeri -->
+                <div id="initial-camera-box" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center flex-1 min-h-[250px]">
+                    <div class="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mb-4 text-blue-500 shadow-inner">
+                        <i data-lucide="image-plus" class="w-9 h-9"></i>
+                    </div>
+                    <h2 class="text-lg font-bold mb-1">Unggah Karya</h2>
+                    <p class="text-slate-500 text-xs mb-6 px-2">Ambil foto langsung atau pilih dari galeri. Pastikan tulisan terbaca jelas.</p>
+                    
+                    <div class="flex flex-col gap-3 w-full">
+                        <button id="btn-start-camera" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-full shadow-md transition-all flex items-center justify-center gap-2 w-full text-sm">
+                            <i data-lucide="camera" class="w-[18px] h-[18px]"></i> Kamera Langsung
+                        </button>
+                        <button id="btn-open-gallery" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 px-6 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 w-full text-sm">
+                            <i data-lucide="upload" class="w-[18px] h-[18px]"></i> Pilih dari Galeri
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tampilan Kamera Menyala (Live) -->
+                <div id="live-camera-box" class="hidden-section bg-black rounded-2xl overflow-hidden shadow-sm border border-slate-800 flex flex-col flex-1 relative min-h-[350px]">
+                    <video id="camera-stream" autoplay playsinline class="w-full h-full object-cover absolute inset-0"></video>
+                    
+                    <!-- Tombol Silang untuk membatalkan kamera -->
+                    <button id="btn-cancel-camera" class="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full backdrop-blur-md z-10 hover:bg-red-500 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+
+                    <!-- Tombol Jepret -->
+                    <div class="absolute bottom-6 left-0 right-0 flex justify-center z-10 px-4">
+                        <button id="btn-capture" class="bg-white hover:bg-slate-200 text-slate-900 font-bold py-3 px-6 rounded-full shadow-2xl flex items-center justify-center gap-2 w-full max-w-[200px] transition-all">
+                            <div class="w-5 h-5 rounded-full border-4 border-red-500"></div> Jepret Foto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian Preview Foto -->
+            <div id="section-preview" class="hidden-section bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="relative rounded-xl overflow-hidden mb-5 bg-slate-100 flex justify-center">
+                    <img id="image-preview" src="" alt="Preview" class="max-h-[50vh] object-contain" />
+                    <div id="loading-overlay" class="hidden-section absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                        <i data-lucide="refresh-cw" class="w-9 h-9 animate-spin mb-3 text-blue-400"></i>
+                        <p class="font-bold text-sm">Menganalisis...</p>
+                    </div>
+                </div>
+
+                <div id="error-box" class="hidden-section bg-red-50 text-red-600 p-3 rounded-xl mb-5 flex items-start gap-2 text-sm">
+                    <i data-lucide="alert-circle" class="shrink-0 mt-0.5 w-4 h-4"></i>
+                    <p id="error-message"></p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <button id="btn-evaluate" class="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 text-sm">
+                        Mulai Penilaian AI
+                    </button>
+                    <button id="btn-retake" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 text-sm">
+                        Ulangi / Ganti Foto
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bagian Hasil Penilaian -->
+            <div id="section-result" class="hidden-section space-y-5">
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 shadow-lg text-white text-center relative overflow-hidden">
+                    <div class="absolute -top-4 -right-4 p-4 opacity-10">
+                        <i data-lucide="sparkles" class="w-24 h-24"></i>
+                    </div>
+                    <h2 class="text-sm font-medium mb-3 text-blue-100 relative z-10 uppercase tracking-wide">Nilai Akhir</h2>
+                    <div id="result-student-info" class="hidden-section bg-white/20 backdrop-blur-sm rounded-lg p-2.5 mb-4 mx-auto max-w-[200px] relative z-10 border border-white/30">
+                        <p id="res-name" class="font-bold text-base truncate"></p>
+                        <p id="res-number" class="text-blue-100 text-[10px] font-medium mt-0.5"></p>
+                    </div>
+                    <div id="res-final-score" class="text-6xl font-black mb-1 relative z-10">0</div>
+                    <p class="text-blue-100 font-medium text-xs relative z-10">Total Poin: <span id="res-total-score">0</span> / 20</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+                    <h3 class="font-bold text-base mb-3 border-b pb-3 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-[18px] h-[18px] text-green-500"></i> Rincian Penilaian
+                    </h3>
+                    <div id="indicators-container"></div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 text-center">
+                        <button id="btn-save-sheet" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 text-sm">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            <span id="save-btn-text">Simpan ke Spreadsheet</span>
+                        </button>
+                        <p id="save-error-msg" class="hidden-section text-red-500 text-xs mt-2">Gagal menyimpan. Coba lagi.</p>
+                    </div>
+
+                    <button id="btn-reset" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition-all flex justify-center items-center gap-2 text-sm mb-4">
+                        <i data-lucide="camera" class="w-[18px] h-[18px]"></i> Nilai Karya Lainnya
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // MASUKKAN API KEY ANDA DI SINI:
+        const apiKey = "AIzaSyDfRO4NHy3sre3yoiuPino4TpWckQCJ2tY"; 
+        const scriptUrl = "https://script.google.com/macros/s/AKfycby8YQrMcV2uU7cC60OUcqeUbVv3-WQsKA9R6AH9csh77NIqMg5eoOGzmUTzibhgCkFx/exec";
+        
+        let base64Data = null;
+        let mimeTypeData = "image/jpeg";
+        let evaluationResult = null;
+        let currentStream = null;
+
+        // Referensi Elemen DOM
+        const secInput = document.getElementById('section-input');
+        const secPreview = document.getElementById('section-preview');
+        const secResult = document.getElementById('section-result');
+        const imgPreview = document.getElementById('image-preview');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const btnEvaluate = document.getElementById('btn-evaluate');
+        const btnRetake = document.getElementById('btn-retake');
+        const errorBox = document.getElementById('error-box');
+        const errorMsg = document.getElementById('error-message');
+        const inputName = document.getElementById('input-name');
+        const inputNumber = document.getElementById('input-number');
+        const btnReset = document.getElementById('btn-reset');
+        
+        // DOM Tombol Spreadsheet
+        const btnSaveSheet = document.getElementById('btn-save-sheet');
+        const saveBtnText = document.getElementById('save-btn-text');
+        const saveErrorMsg = document.getElementById('save-error-msg');
+        
+        // DOM Pilihan Galeri/Kamera
+        const fileInput = document.getElementById('fileInput');
+        const btnOpenGallery = document.getElementById('btn-open-gallery');
+        const initialCameraBox = document.getElementById('initial-camera-box');
+        const liveCameraBox = document.getElementById('live-camera-box');
+        const cameraStream = document.getElementById('camera-stream');
+        const btnStartCamera = document.getElementById('btn-start-camera');
+        const btnCapture = document.getElementById('btn-capture');
+        const btnCancelCamera = document.getElementById('btn-cancel-camera');
+
+        // FUNGSI GALERI
+        btnOpenGallery.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    showError('Mohon unggah file berupa gambar (JPG/PNG).');
+                    return;
+                }
+                mimeTypeData = file.type;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imgPreview.src = event.target.result;
+                    base64Data = event.target.result.split(',')[1];
+                    secInput.classList.add('hidden-section');
+                    secPreview.classList.remove('hidden-section');
+                    hideError();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // FUNGSI KAMERA LANGSUNG
+        btnStartCamera.addEventListener('click', async () => {
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" } 
+                });
+                cameraStream.srcObject = currentStream;
+                initialCameraBox.classList.add('hidden-section');
+                liveCameraBox.classList.remove('hidden-section');
+            } catch (err) {
+                alert("Gagal mengakses kamera. Pastikan browser memiliki izin untuk menggunakan kamera perangkat Anda.");
+                console.error(err);
+            }
+        });
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+        }
+
+        btnCancelCamera.addEventListener('click', () => {
+            stopCamera();
+            liveCameraBox.classList.add('hidden-section');
+            initialCameraBox.classList.remove('hidden-section');
+        });
+
+        btnCapture.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraStream.videoWidth;
+            canvas.height = cameraStream.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
+            
+            stopCamera();
+            
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+            base64Data = dataURL.split(',')[1];
+            mimeTypeData = "image/jpeg";
+            
+            imgPreview.src = dataURL;
+            liveCameraBox.classList.add('hidden-section');
+            initialCameraBox.classList.remove('hidden-section');
+            secInput.classList.add('hidden-section');
+            secPreview.classList.remove('hidden-section');
+            hideError();
+        });
+
+        // FUNGSI PENILAIAN AI (GEMINI)
+        btnEvaluate.addEventListener('click', async () => {
+            if (!base64Data) return;
+            setEvaluatingState(true);
+            hideError();
+
+            const prompt = `Anda adalah sistem AI penilai infografis kelas 6 SD. Anda HARUS menilai DENGAN SANGAT KETAT dan OBJEKTIF berdasarkan gambar yang diunggah. 
+
+ATURAN MUTLAK PEWARNAAN (Kriteria 3 - Kreativitas):
+- Jika background (latar belakang kertas) TIDAK diwarnai penuh (masih terlihat banyak putih kertas), skor MAKSIMAL Kreativitas adalah 2.
+- Skor 4 HANYA HUKUMNYA WAJIB diberikan jika SELURUH ruang gambar (termasuk background/latar belakang) diwarnai penuh (full block color) DAN warnanya rapi.
+- Jika hanya gambar objek utamanya saja yang diwarnai tapi background kosong, berikan skor 2.
+- Jika tidak ada warna sama sekali (hitam putih) atau hanya coretan asal, berikan skor 1.
+
+Rubrik Lengkap (Beri skor integer 1-4):
+1. Isi / Materi: 4=Informasi sangat lengkap & akurat, 3=Lengkap, 2=Kurang jelas/kurang lengkap, 1=Banyak salah.
+2. Desain & Tata Letak: 4=Sangat rapi & proporsional, 3=Rapi, 2=Agak berantakan, 1=Kacau.
+3. Kreativitas & Pewarnaan: (IKUTI ATURAN MUTLAK PEWARNAAN DI ATAS!).
+4. Bahasa: 4=Efektif & 0 typo, 3=1-2 typo, 2=Banyak typo/bertele-tele, 1=Sulit dimengerti.
+5. Penyampaian Pesan: 4=Sangat jelas, 3=Jelas, 2=Agak tersembunyi, 1=Tidak tersampaikan.
+
+Berikan alasan singkat (1-2 kalimat) yang spesifik untuk tiap skor. Pada alasan kriteria 3, Anda WAJIB menyebutkan dengan jelas status pewarnaan background-nya (apakah full warna, sebagian, atau putih kosong).`;
+
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    isiMateri: { type: "OBJECT", properties: { skor: { type: "INTEGER" }, alasan: { type: "STRING" } } },
+                    desainTataLetak: { type: "OBJECT", properties: { skor: { type: "INTEGER" }, alasan: { type: "STRING" } } },
+                    kreativitas: { type: "OBJECT", properties: { skor: { type: "INTEGER" }, alasan: { type: "STRING" } } },
+                    bahasa: { type: "OBJECT", properties: { skor: { type: "INTEGER" }, alasan: { type: "STRING" } } },
+                    penyampaianPesan: { type: "OBJECT", properties: { skor: { type: "INTEGER" }, alasan: { type: "STRING" } } }
+                },
+                required: ["isiMateri", "desainTataLetak", "kreativitas", "bahasa", "penyampaianPesan"]
+            };
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: mimeTypeData, data: base64Data } }] }],
+                generationConfig: { responseMimeType: "application/json", responseSchema: schema }
+            };
+
+            try {
+                // Deteksi otomatis: Gunakan model publik jika ada API Key (saat di-share/di luar),
+                // atau model preview khusus jika berjalan di dalam Canvas ini.
+                const modelName = apiKey ? "gemini-2.5-flash" : "gemini-2.5-flash-preview-09-2025";
+                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorDetail = await response.json();
+                    throw new Error(errorDetail.error?.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) throw new Error("Format respons AI kosong.");
+                
+                const evaluation = JSON.parse(jsonText);
+                const totalScore = evaluation.isiMateri.skor + evaluation.desainTataLetak.skor + evaluation.kreativitas.skor + evaluation.bahasa.skor + evaluation.penyampaianPesan.skor;
+                const finalScore = Math.round((totalScore / 20) * 100);
+                
+                evaluationResult = { ...evaluation, totalSkor: totalScore, nilaiAkhir: finalScore };
+                showResult();
+
+            } catch (err) {
+                console.error("Detail Error API:", err);
+                showError(`Terjadi Kesalahan: ${err.message}`);
+            } finally {
+                setEvaluatingState(false);
+            }
+        });
+
+        // FUNGSI MENYIMPAN KE SPREADSHEET
+        btnSaveSheet.addEventListener('click', async () => {
+            const nama = inputName.value.trim();
+            const nomor = inputNumber.value.trim();
+            if (!nama || !nomor) { alert("Harap isi Nama Siswa dan Nomor Peserta!"); return; }
+
+            btnSaveSheet.disabled = true;
+            btnSaveSheet.classList.replace('bg-green-600', 'bg-slate-400');
+            saveBtnText.innerText = "Mengirim...";
+            saveErrorMsg.classList.add('hidden-section');
+
+            const payload = {
+                timestamp: new Date().toLocaleString('id-ID'), nama: nama, nomor: nomor,
+                skorIsi: evaluationResult.isiMateri.skor, alasanIsi: evaluationResult.isiMateri.alasan,
+                skorDesain: evaluationResult.desainTataLetak.skor, alasanDesain: evaluationResult.desainTataLetak.alasan,
+                skorKreativitas: evaluationResult.kreativitas.skor, alasanKreativitas: evaluationResult.kreativitas.alasan,
+                skorBahasa: evaluationResult.bahasa.skor, alasanBahasa: evaluationResult.bahasa.alasan,
+                skorPesan: evaluationResult.penyampaianPesan.skor, alasanPesan: evaluationResult.penyampaianPesan.alasan,
+                totalSkor: evaluationResult.totalSkor, nilaiAkhir: evaluationResult.nilaiAkhir
+            };
+
+            try {
+                await fetch(scriptUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(payload) });
+                btnSaveSheet.classList.replace('bg-slate-400', 'bg-green-100');
+                btnSaveSheet.classList.add('text-green-700');
+                saveBtnText.innerText = "Tersimpan!";
+            } catch (err) {
+                btnSaveSheet.disabled = false;
+                btnSaveSheet.classList.replace('bg-slate-400', 'bg-green-600');
+                saveBtnText.innerText = "Simpan ke Spreadsheet";
+                saveErrorMsg.classList.remove('hidden-section');
+            }
+        });
+
+        function showResult() {
+            secPreview.classList.add('hidden-section');
+            secResult.classList.remove('hidden-section');
+            document.getElementById('res-final-score').innerText = evaluationResult.nilaiAkhir;
+            document.getElementById('res-total-score').innerText = evaluationResult.totalSkor;
+            const name = inputName.value.trim();
+            const number = inputNumber.value.trim();
+            if(name || number) {
+                document.getElementById('result-student-info').classList.remove('hidden-section');
+                document.getElementById('res-name').innerText = name || "-";
+                document.getElementById('res-number').innerText = number || "-";
+            }
+            renderIndicators();
+        }
+
+        function renderIndicators() {
+            const container = document.getElementById('indicators-container');
+            container.innerHTML = '';
+            const criteria = [
+                { title: "1. Isi / Materi", icon: "book-open", data: evaluationResult.isiMateri },
+                { title: "2. Desain & Tata Letak", icon: "image", data: evaluationResult.desainTataLetak },
+                { title: "3. Kreativitas", icon: "sparkles", data: evaluationResult.kreativitas },
+                { title: "4. Bahasa", icon: "file-text", data: evaluationResult.bahasa },
+                { title: "5. Penyampaian Pesan", icon: "message-square", data: evaluationResult.penyampaianPesan }
+            ];
+
+            criteria.forEach(item => {
+                let colorClass = "bg-red-100 text-red-700 border-red-200"; let badgeClass = "bg-red-500 text-white";
+                if (item.data.skor === 4) { colorClass = "bg-green-50 text-green-800 border-green-200"; badgeClass = "bg-green-500 text-white"; }
+                else if (item.data.skor === 3) { colorClass = "bg-blue-50 text-blue-800 border-blue-200"; badgeClass = "bg-blue-500 text-white"; }
+                else if (item.data.skor === 2) { colorClass = "bg-yellow-50 text-yellow-800 border-yellow-200"; badgeClass = "bg-yellow-500 text-yellow-900"; }
+                
+                const html = `<div class="p-4 rounded-2xl border mb-3 flex items-start gap-3 shadow-sm ${colorClass}"><div class="flex-1"><div class="flex items-center gap-2 mb-1.5 font-bold text-base"><i data-lucide="${item.icon}" class="w-[18px] h-[18px]"></i>${item.title}</div><p class="text-xs opacity-90 leading-relaxed">${item.data.alasan}</p></div><div class="flex flex-col items-center justify-center shrink-0"><span class="text-[10px] font-semibold mb-0.5 uppercase tracking-wider opacity-70">Skor</span><div class="text-xl font-black w-10 h-10 rounded-full flex items-center justify-center shadow-sm ${badgeClass}">${item.data.skor}</div></div></div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+            lucide.createIcons();
+        }
+
+        btnRetake.addEventListener('click', () => {
+            fileInput.value = '';
+            base64Data = null;
+            secPreview.classList.add('hidden-section');
+            secInput.classList.remove('hidden-section');
+            // Menampilkan kembali opsi kamera/galeri tanpa otomatis membuka kamera
+        });
+
+        btnReset.addEventListener('click', () => {
+            fileInput.value = '';
+            base64Data = null; evaluationResult = null;
+            inputName.value = ''; inputNumber.value = '';
+            secResult.classList.add('hidden-section');
+            secInput.classList.remove('hidden-section');
+            document.getElementById('result-student-info').classList.add('hidden-section');
+            
+            // Kembalikan status tombol simpan
+            btnSaveSheet.disabled = false;
+            btnSaveSheet.classList.remove('bg-green-100', 'text-green-700', 'bg-slate-400');
+            btnSaveSheet.classList.add('bg-green-600', 'text-white');
+            saveBtnText.innerText = "Simpan ke Spreadsheet";
+            saveErrorMsg.classList.add('hidden-section');
+        });
+
+        function setEvaluatingState(isEval) {
+            btnEvaluate.disabled = isEval; btnRetake.disabled = isEval;
+            if(isEval) {
+                loadingOverlay.classList.remove('hidden-section');
+                btnEvaluate.innerText = "Memproses..."; btnEvaluate.classList.replace('bg-green-600', 'bg-slate-400');
+            } else {
+                loadingOverlay.classList.add('hidden-section');
+                btnEvaluate.innerText = "Mulai Penilaian AI"; btnEvaluate.classList.replace('bg-slate-400', 'bg-green-600');
+            }
+        }
+
+        function showError(msg) { errorMsg.innerText = msg; errorBox.classList.remove('hidden-section'); }
+        function hideError() { errorBox.classList.add('hidden-section'); }
+    </script>
+</body>
+</html>
